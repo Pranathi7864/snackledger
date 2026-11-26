@@ -1,0 +1,32 @@
+{
+  "name": "snackledger",
+  "version": "1.0.0",
+  "description": "Order-to-audit system for a small food manufacturer: offline-first salesman PWA, BOM-based production, GST invoicing, ledger-based stock, auditor reports.",
+  "main": "src/server.js",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test --test-concurrency=1 test/*.test.js",
+    "test:e2e": "node --test --test-concurrency=1 test/e2e/*.e2e.js",
+    "seed": "node scripts/reset.js",
+    "benchmark": "node scripts/benchmark.js",
+    "benchmark:extra": "node scripts/benchmark-extra.js"
+  },
+  "dependencies": {
+    "@electric-sql/pglite": "^0.5.17",
+    "bcryptjs": "^3.0.3",
+    "decimal.js": "^10.6.0",
+    "exceljs": "^4.4.0",
+    "express": "^4.22.3",
+    "express-session": "^1.19.0",
+    "pdfkit": "^0.21.0",
+    "pg": "^8.23.1"
+  },
+  "devDependencies": {
+    "playwright": "^1.50.0"
+  }
+}

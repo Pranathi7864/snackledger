@@ -1,0 +1,18 @@
+# One command:  docker compose up --build      then open http://localhost:8080
+services:
+  db:
+    image: postgres:16-alpine
+    environment: { POSTGRES_DB: snackledger, POSTGRES_USER: snackledger, POSTGRES_PASSWORD: localdemo, TZ: Asia/Kolkata }
+    volumes: ["snackledger-data:/var/lib/postgresql/data"]
+    healthcheck: { test: ["CMD-SHELL", "pg_isready -U snackledger -d snackledger"], interval: 5s, timeout: 5s, retries: 20 }
+  app:
+    build: .
+    ports: ["8080:8080"]
+    environment:
+      DATABASE_URL: postgres://snackledger:localdemo@db:5432/snackledger
+      SESSION_SECRET: change-me-in-any-real-deployment
+      # AUTO_SEED=1 loads the Section 5 master data on first start; set COOKIE_SECURE=1 when served over HTTPS
+      AUTO_SEED: "1"
+    depends_on: { db: { condition: service_healthy } }
+volumes:
+  snackledger-data:

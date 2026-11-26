@@ -1,0 +1,28 @@
+/* salesman screens: big touch targets, one-handed use */
+.cust-list{display:flex;flex-direction:column;gap:.4rem;margin-top:.6rem;max-height:46vh;overflow:auto}
+.cust-item{display:flex;flex-direction:column;align-items:flex-start;gap:.1rem;width:100%;min-height:54px;padding:.6rem .8rem;border:1px solid var(--line);border-radius:10px;background:var(--surface);cursor:pointer;text-align:left}
+.cust-item:hover,.cust-item:focus{border-color:var(--brand);background:var(--brand-soft)}
+.chip-card{display:flex;align-items:center;gap:.8rem;border-color:var(--brand);background:var(--brand-soft)}
+.small{font-size:.8rem}
+.prow{display:grid;grid-template-columns:1fr auto;gap:.5rem .8rem;align-items:center;margin-top:.6rem}
+.prow.has{border-color:var(--brand)}
+.prow .pname{display:flex;flex-direction:column}
+.prow .segs,.prow .small{grid-column:1 / -1}
+.stepper{display:flex;align-items:center;gap:.3rem}
+.stepper .step{width:48px;height:48px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font-size:1.6rem;font-weight:700;cursor:pointer;color:var(--brand)}
+.stepper .step:active{background:var(--brand);color:#fff}
+.stepper .qty{width:72px;text-align:center;font-size:1.25rem;font-weight:700;min-height:48px;padding:.2rem}
+.segs{display:flex;gap:.4rem}
+.seg{flex:1;min-height:40px;border:1px solid var(--line);background:var(--surface);border-radius:10px;font-weight:700;cursor:pointer;color:var(--muted)}
+.seg.on{background:var(--brand-soft);border-color:var(--brand);color:var(--brand)}
+.totals{margin-top:.8rem;display:flex;flex-direction:column;gap:.35rem}
+.big-total{font-size:1.15rem;font-weight:800;border-top:1px dashed var(--line);padding-top:.5rem}
+.submitbar{position:sticky;bottom:64px;padding:.6rem 0;background:linear-gradient(to top,var(--bg) 70%,transparent);margin-top:.6rem;z-index:4}
+@media (min-width:821px){.submitbar{bottom:0}}
+.ocard{display:block;width:100%;text-align:left;margin-bottom:.6rem;font:inherit;color:inherit}
+button.ocard{cursor:pointer}
+.ocard.tap:active{border-color:var(--brand)}
+.ocard.pending{border-left:5px solid var(--warn)}.ocard.failed{border-left:5px solid var(--bad)}
+.steps{display:flex;gap:.3rem;flex-wrap:wrap}
+.stp{flex:1;min-width:70px;text-align:center;padding:.35rem .3rem;border-radius:99px;background:var(--line);color:var(--muted);font-size:.78rem;font-weight:700}
+.stp.done{background:var(--ok-soft);color:var(--ok)}
