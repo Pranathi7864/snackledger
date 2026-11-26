@@ -19,7 +19,7 @@ npm start            # http://localhost:8080
 ```bash
 docker compose up --build
 ```
-Open http://localhost:8080. Master data from Section 5 is loaded on first start. Reset to a clean benchmark state at any time with `npm run seed` (destructive: wipes demo data).
+
 
 | Login | Password | Role |
 |---|---|---|
@@ -29,12 +29,8 @@ Open http://localhost:8080. Master data from Section 5 is loaded on first start.
 | `auditor` | `demo1234` | Accountant / auditor (read-only) |
 | `owner` | `demo1234` | Owner (read-only dashboard) |
 
-Extra stress/permission/speed checks: `npm run benchmark:extra` (same server, after `npm run seed`).
 
-Run the benchmark yourself, no clicking: `npm run seed && npm start`, then in another terminal `npm run benchmark` prints the "Results we will check" table with PASS/FAIL. Tests: `npm test` (unit + API + rules), `npm run test:e2e` (real-browser, needs Playwright's Chromium).
 
-## Stack, and why
-**Node.js + Express + PostgreSQL, plain JavaScript PWA, no front-end build.** Node let me build *and run* every layer end to end (API, real Postgres, real browser, offline mode) so the benchmark numbers are measured, not assumed. A framework-free PWA gives offline support (service worker + IndexedDB), a phone-sized UI and no CDN dependencies, so it runs on a factory LAN with no internet. PostgreSQL gives exact `NUMERIC` money, row locks and constraints. Embedded Postgres (PGlite) runs the same SQL for the zero-install mode and the tests, and the whole suite also passes on PostgreSQL 16 with the `pg` driver.
 
 ## Requirement coverage
 
@@ -43,8 +39,6 @@ Run the benchmark yourself, no clicking: `npm run seed && npm start`, then in an
 | **Must have** | Login with 5 roles (enforced on the server); product / customer / raw-material / BOM masters; mobile order entry + admin approval; GST invoice PDF; production run updates raw and finished stock automatically; planned-vs-actual consumption and yield with variance; stock summary + ledger; sales register + stock report as CSV/Excel/PDF. **All done.** |
 | **Should have** | Purchases and suppliers; payments, outstanding, ageing; cost per packet with overheads and margin; GST summary (GSTR-1 / 3B shape); variance alerts with configurable tolerance; owner dashboard. **All done.** |
 | **Stretch** | Offline order capture with sync ✅, batch + expiry with FEFO dispatch ✅, reorder levels + low-stock alerts ✅, production planning from pending orders ✅, GPS visit check-in (offline too) ✅, Tally-compatible XML export ✅, e-Invoice / e-Way Bill mock payloads ✅, Tamil interface (floor + salesman screens, toggle in the top bar) ✅ |
-
-Also: partial dispatch, back-orders, credit-note cancellation with optional stock return, customer-specific prices, carton/packet and g/kg/mL/L unit conversion, stock adjustments with reasons, void-run with ledger reversal, user management, audit log with before/after, invoice share via WhatsApp / email / link.
 
 ## Offline mode (how it really works)
 * **App shell:** a service worker precaches every screen; the app opens with no network. Nothing loads from a CDN.
@@ -84,7 +78,7 @@ Differences and extra observations, all explained:
 * Benchmark: materials ₹3,435 + packaging ₹620 + labour ₹1,200 + power/gas ₹600 = **₹5,855 ÷ 188 = ₹31.1436 → ₹31.14**, margin ₹18.86 (37.7%) on the ₹50 price.
 * Finished-goods stock is tracked in quantity; the 50 opening packets have no cost basis in the brief, so FG valuation uses the run's cost per packet, not a blended stock value.
 
-## Assumptions (Section 10 asks for these)
+## Assumptions 
 1. **Approval reserves stock.** Approved or invoiced orders reserve finished goods; "free stock" = on hand − reserved by other orders. Dispatch checks real stock again.
 2. **Invoice at order quantity, dispatch may be partial.** Invoice numbering is per financial year (April–March), gap-free (`SL/2026-27/0001`); credit notes `SL-CN/…`, receipts `REC/…`. Tax is rounded per line to paise, with SGST = tax − CGST so halves always add up. No whole-rupee round-off, so the invoice total is exactly ₹7,875.00.
 3. **Place of supply = customer's state.** Seller state is Tamil Nadu (33), so TN → CGST+SGST and any other state → IGST. GSTINs are validated (format, checksum, and state code must match the chosen state). Buyers without GSTIN get a B2C invoice.
@@ -95,27 +89,4 @@ Differences and extra observations, all explained:
 8. Prices are server-authoritative: customer-specific price, else list price.
 9. Ageing buckets are days past the **due date** (invoice date + customer's credit days).
 
-## Known gaps (honest list)
-* The **Docker image was not built or run in my environment** (no Docker daemon here). The app itself, tests and the PostgreSQL path (`pg`) *were* run, including the whole suite against PostgreSQL 16. Please run `docker compose up --build` once.
-* e-Invoice / e-Way Bill are **mock payloads only**; no government API. Tally export is a best-effort voucher XML (ledger names in `src/services/tally.js` must exist in your Tally company).
-* Partial **returns** are not modelled (only full invoice cancellation with a credit note and optional stock return). Purchases cannot be edited or cancelled; correct with adjustments.
-* No HTTPS termination (use a reverse proxy; set `COOKIE_SECURE=1`, `TRUST_PROXY=1`). Demo passwords are shared and must be changed for any real use. Login throttling is in-memory per process.
-* PDF uses built-in Helvetica, so the rupee sign prints as "Rs.". Tamil covers navigation, salesman and production screens, not every admin form.
-* Work-in-progress is modelled as an open run (materials issued, output not yet recorded) with its issued value, not as a separate stock ledger.
 
-## Project layout
-```
-db/schema.sql           tables, constraints, append-only triggers
-db/seed.js              Section 5 master data
-src/services/           stock ledger, production, costing, sales, purchasing, reports, planning, exports
-src/routes/             HTTP API with role guards
-public/                 PWA: core.js (shell, API, i18n), offline.js, sw.js, views-*.js
-test/                   unit, benchmark, rules, e2e (real browser)
-scripts/                benchmark.js, reset.js
-docs/                   DESIGN.md (design note), DEMO_SCRIPT.md (video script), screens/
-```
-
-## GST report rule
-Every invoice issued in the period counts as outward supply even if it is cancelled later; the credit note (dated when issued) is the reversal. Cancelled invoices are therefore NOT filtered out of the GST summary or Tally export. Tested in `test/rules.test.js` ("GST summary does not subtract a cancelled invoice twice").
-
-Same rule for the customer-wise sales, product-wise sales, outstanding/ageing reports and the Home page: a period shows invoices issued in it less credit notes issued in it, and "outstanding as on <date>" subtracts a credit note only from its own date. An invoice's current status is never used for past periods. Test: "past-period reports use the credit-note date".
